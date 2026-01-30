@@ -288,6 +288,17 @@ export function ResultTable({ results }: ResultTableProps) {
             </TableBody>
           </Table>
         </div>
+        {/* Footer with legend */}
+        <div className="border-gray-100 border-t bg-gray-50 px-6 py-3">
+          <div className="flex items-center gap-1 text-gray-500 text-xs">
+            <span className="font-semibold">Keterangan:</span>
+            <span className="font-mono">DT = Daya Tarik</span>
+            <span className="text-gray-300">|</span>
+            <span className="font-mono">F = Fasilitas</span>
+            <span className="text-gray-300">|</span>
+            <span className="font-mono">KL = Kualitas Layanan</span>
+          </div>
+        </div>
       </div>
     </div>
   );
