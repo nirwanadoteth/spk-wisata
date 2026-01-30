@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/select";
 import type { Alternative } from "@/lib/types";
 
+/**
+ * Form validation schema using Zod
+ * Validates user input for new tourism destination
+ */
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Nama harus diisi minimal 2 karakter.",
@@ -25,13 +29,35 @@ const formSchema = z.object({
   c4: z.string().min(1, "Pilih nilai Kualitas Layanan"),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
+/**
+ * Props for UserInputForm component
+ */
 interface UserInputFormProps {
+  /** Callback when form is successfully submitted */
   onSubmitUser: (data: Alternative) => void;
+  /** Callback to close the form modal */
   onClose: () => void;
 }
 
+/**
+ * User Input Form Component
+ *
+ * Form for adding custom tourism destinations to compare against recommendations.
+ * Uses React Hook Form with Zod validation for type-safe form handling.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UserInputForm
+ *   onSubmitUser={(alt) => console.log(alt)}
+ *   onClose={() => setOpen(false)}
+ * />
+ * ```
+ */
 export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
-  const { control, handleSubmit } = useForm<z.infer<typeof formSchema>>({
+  const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -42,7 +68,12 @@ export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  /**
+   * Handles form submission
+   * Converts form values to Alternative type and passes to parent
+   * React 19.2 note: No need for useCallback with React Compiler enabled
+   */
+  const onSubmit = (values: FormValues) => {
     const newAlternative: Alternative = {
       id: `user-${crypto.randomUUID()}`,
       name: values.name,
@@ -53,13 +84,11 @@ export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
       isUserObj: true,
     };
     onSubmitUser(newAlternative);
-  }
+  };
 
   return (
     <div className="h-fit w-full">
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        {" "}
-        {/* Changed space-y-4 to space-y-6 */}
         <Controller
           control={control}
           name="name"

@@ -8,10 +8,32 @@ import {
 } from "@/components/ui/table";
 import type { Alternative } from "@/lib/types";
 
+/**
+ * Props for ResultTable component
+ */
 interface ResultTableProps {
+  /** Array of tourism destinations with TOPSIS scores, sorted by rank */
   results: readonly Alternative[];
 }
 
+/**
+ * Result Table Component
+ *
+ * Displays detailed ranking table with all evaluated tourism destinations.
+ * Shows rank, name, final score, and criteria values with visual indicators.
+ *
+ * Features:
+ * - Rank badges with special styling for top 3
+ * - User-submitted destinations highlighted in blue
+ * - Score visualization with progress bars
+ * - Criteria values displayed as metadata
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ResultTable results={rankedAlternatives} />
+ * ```
+ */
 export function ResultTable({ results }: ResultTableProps) {
   if (results.length === 0) {
     return (
@@ -44,17 +66,22 @@ export function ResultTable({ results }: ResultTableProps) {
             </TableHeader>
             <TableBody className="divide-y divide-gray-50">
               {results.map((alt, index) => {
-                // Rank styling
+                /**
+                 * Determine rank badge styling
+                 * Gold for 1st, Silver for 2nd, Bronze for 3rd
+                 */
                 let rankBadgeClass = "bg-gray-100 text-gray-600";
                 if (index === 0) {
-                  rankBadgeClass = "bg-yellow-100 text-yellow-700 shadow-sm";
+                  rankBadgeClass = "bg-yellow-100 text-yellow-700 shadow-sm"; // Gold
                 }
                 if (index === 1) {
-                  rankBadgeClass = "bg-gray-100 text-gray-700 shadow-sm";
+                  rankBadgeClass = "bg-gray-100 text-gray-700 shadow-sm"; // Silver
                 }
                 if (index === 2) {
-                  rankBadgeClass = "bg-orange-50 text-orange-700 shadow-sm";
+                  rankBadgeClass = "bg-orange-50 text-orange-700 shadow-sm"; // Bronze
                 }
+
+                // Highlight user-submitted destinations
                 const isUserRow = alt.isUserObj;
                 const rowClass = isUserRow
                   ? "bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500 transition-colors group relative"

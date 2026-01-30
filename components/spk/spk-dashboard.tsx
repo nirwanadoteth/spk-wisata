@@ -1,7 +1,7 @@
 "use client";
 
 import { Award, MapPin, Plus, Search, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ChangeEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -13,29 +13,66 @@ import { RankingChart } from "./ranking-chart";
 import { ResultTable } from "./result-table";
 import { UserInputForm } from "./user-input-form";
 
+/**
+ * SPK Dashboard Component
+ *
+ * Main dashboard for the Tourism Decision Support System.
+ * Provides TOPSIS-based recommendations for tourism destinations in Ciwidey.
+ *
+ * Features:
+ * - Display top recommendations with ranking
+ * - Add user-defined destinations for comparison
+ * - Real-time search filtering
+ * - Interactive charts and tables
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <SpkDashboard />
+ * ```
+ */
 export function SpkDashboard() {
   const [userAlternatives, setUserAlternatives] = useState<Alternative[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  /**
+   * Handles submission of user-defined tourism destination
+   * Replaces any existing user destination to avoid clutter
+   */
   const handleUserSubmit = (alt: Alternative) => {
-    // Replace any existing 'isUserObj' alternative with the new one to avoid clutter.
     const nonUser = userAlternatives.filter((a) => !a.isUserObj);
     setUserAlternatives([...nonUser, alt]);
-    setIsModalOpen(false); // Close modal on submit
+    setIsModalOpen(false);
   };
 
+  /**
+   * Handles search input changes
+   * React 19.2 note: With React Compiler, this function is automatically
+   * optimized without needing useCallback
+   */
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  /**
+   * Calculate TOPSIS results and apply search filter
+   * React 19.2 note: With React Compiler enabled, manual memoization is less
+   * critical, but we keep useMemo for expensive TOPSIS calculations
+   */
   const { results } = useMemo(() => {
+    // Combine initial destinations with user-submitted ones
     const allAlternatives = [...INITIAL_ALTERNATIVES, ...userAlternatives];
+
+    // Run TOPSIS algorithm to calculate preference scores
     const topsisResult = calculateTOPSIS(allAlternatives);
 
-    let finalResults = topsisResult.alternatives;
-
-    if (searchQuery) {
-      finalResults = finalResults.filter((r) =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+    // Apply search filter if query exists
+    const finalResults = searchQuery
+      ? topsisResult.alternatives.filter((r) =>
+          r.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : topsisResult.alternatives;
 
     return {
       results: finalResults,
@@ -83,15 +120,14 @@ export function SpkDashboard() {
               <h2 className="font-bold text-2xl text-gray-800">
                 Hasil Rekomendasi
               </h2>
-              <p className="text-gray-500 text-sm">
-                Berdasarkan metode TOPSIS (Total Score Scaled)
-              </p>
+              <p className="text-gray-500 text-sm">Berdasarkan metode TOPSIS</p>
             </div>
             <div className="relative w-full md:w-64">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
+                aria-label="Cari destinasi wisata"
                 className="rounded-xl border-gray-200 bg-white pl-10"
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Cari wisata..."
                 value={searchQuery}
               />

@@ -16,10 +16,17 @@ import {
 } from "@/components/ui/chart";
 import type { Alternative } from "@/lib/types";
 
+/**
+ * Props for RankingChart component
+ */
 interface RankingChartProps {
+  /** Array of tourism destinations with TOPSIS scores */
   results: readonly Alternative[];
 }
 
+/**
+ * Chart configuration for Recharts
+ */
 const chartConfig = {
   score: {
     label: "Skor",
@@ -30,14 +37,31 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+/**
+ * Ranking Chart Component
+ *
+ * Displays a horizontal bar chart comparing user input with top 3 recommendations.
+ * Uses different colors to distinguish user input from system recommendations.
+ *
+ * Color scheme:
+ * - Blue (chart-1): User input
+ * - Yellow (chart-2): Top recommendation
+ * - Green (chart-3): Other recommendations
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <RankingChart results={sortedAlternatives} />
+ * ```
+ */
 export function RankingChart({ results }: RankingChartProps) {
-  // 1. Find User Input
+  // Find user-submitted destination
   const userAlt = results.find((r) => r.isUserObj);
 
-  // 2. Get Top 3 Non-User Alternatives
+  // Get top 3 system recommendations (non-user destinations)
   const top3 = results.filter((r) => !r.isUserObj).slice(0, 3);
 
-  // 3. Combine and add fill colors
+  // Combine user destination with top 3 for comparison
   const rawData = userAlt ? [userAlt, ...top3] : top3;
 
   const chartData = rawData.map((item, index) => {
