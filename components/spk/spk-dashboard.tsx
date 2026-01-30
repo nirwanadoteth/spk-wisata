@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { Award, MapPin, Plus, Search, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { INITIAL_ALTERNATIVES } from "@/lib/spk-data";
@@ -96,7 +97,89 @@ export function SpkDashboard() {
               />
             </div>
           </div>
-          <RankingChart results={results} />
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Card Rekomendasi Utama */}
+            <Card className="relative overflow-hidden rounded-xl border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm lg:col-span-1">
+              <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-green-200 opacity-50" />
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 shadow-green-200 shadow-lg">
+                    <Award className="h-5 w-5 text-white" />
+                  </div>
+                  <CardTitle className="text-green-800 text-lg">
+                    Rekomendasi Utama
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {results.length > 0 ? (
+                  <>
+                    <div>
+                      <h3 className="font-bold text-2xl text-gray-800">
+                        {results[0].name}
+                      </h3>
+                      <div className="mt-1 flex items-center gap-1 text-gray-500 text-sm">
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span>Ciwidey, Bandung</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600 text-sm">Skor</span>
+                        <div className="flex items-center gap-1">
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                          <span className="font-bold text-green-600 text-lg">
+                            {((results[0].score ?? 0) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Runner-up Section */}
+                    {results.length > 1 && (
+                      <div className="border-gray-200 border-t pt-4">
+                        <p className="mb-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+                          Runner-up
+                        </p>
+                        <div className="space-y-2">
+                          {results.slice(1, 3).map((alt, idx) => (
+                            <div
+                              className="flex items-center justify-between rounded-lg bg-white/70 p-2.5"
+                              key={alt.id}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-600 text-xs">
+                                  {idx + 2}
+                                </span>
+                                <span className="font-medium text-gray-700 text-sm">
+                                  {alt.name}
+                                </span>
+                              </div>
+                              <span className="font-semibold text-gray-500 text-sm">
+                                {((alt.score ?? 0) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    Tidak ada data untuk ditampilkan.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Chart */}
+            <div className="lg:col-span-2">
+              <RankingChart results={results} />
+            </div>
+          </div>
+
           <ResultTable results={results} />
         </div>
       </div>
