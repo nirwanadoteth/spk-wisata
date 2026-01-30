@@ -35,13 +35,10 @@ export function ResultTable({ results }: ResultTableProps) {
                   Nama Wisata
                 </TableHead>
                 <TableHead className="text-center font-semibold text-gray-600 text-xs uppercase">
-                  Nilai Preferensi (V)
+                  Nilai Akhir
                 </TableHead>
                 <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase">
-                  Aksesibilitas (C1)
-                </TableHead>
-                <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase">
-                  Kualitas Layanan (C4)
+                  Aksesibilitas
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -81,9 +78,10 @@ export function ResultTable({ results }: ResultTableProps) {
                           </span>
                         )}
                       </div>
-                      {/* Display C2 (Daya Tarik) & C3 (Fasilitas) as key highlights */}
+                      {/* Display C2 (Daya Tarik), C3 (Fasilitas), and C4 (Kualitas Layanan) as key highlights */}
                       <div className="mt-0.5 font-mono text-gray-400 text-xs">
-                        C2: {alt.c2.toFixed(1)} | C3: {alt.c3.toFixed(1)}
+                        DT: {alt.c2.toFixed(1)} | F: {alt.c3.toFixed(1)} | KL:{" "}
+                        {alt.c4.toFixed(1)}
                       </div>
                     </TableCell>
                     <TableCell className="p-4 text-center">
@@ -103,10 +101,6 @@ export function ResultTable({ results }: ResultTableProps) {
                     {/* C1: Aksesibilitas */}
                     <TableCell className="p-4 text-right font-mono text-gray-600">
                       {alt.c1.toFixed(2)}
-                    </TableCell>
-                    {/* C4: Layanan */}
-                    <TableCell className="p-4 text-right font-mono text-gray-600">
-                      {alt.c4.toFixed(2)}
                     </TableCell>
                   </TableRow>
                 );
