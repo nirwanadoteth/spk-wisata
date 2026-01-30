@@ -9,7 +9,7 @@ import {
 import type { Alternative } from "@/lib/types";
 
 interface ResultTableProps {
-  results: Alternative[];
+  results: readonly Alternative[];
 }
 
 export function ResultTable({ results }: ResultTableProps) {
