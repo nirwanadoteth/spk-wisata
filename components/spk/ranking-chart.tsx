@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -17,16 +8,37 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import type { Alternative } from "@/lib/types";
 
 interface RankingChartProps {
   results: Alternative[];
 }
 
-export function RankingChart({ results }: RankingChartProps) {
-  // Logic: Get User Input (if any) and Top 3 (excluding user input if redundant, or just top 3 mixed)
-  // Request: "Input User vs Top 3 Wisata Ciwidey"
+const chartConfig = {
+  score: {
+    label: "Skor: ",
+  },
+  user: {
+    label: "Input Anda",
+    color: "hsl(217 91% 60%)",
+  },
+  top: {
+    label: "Rekomendasi Terbaik",
+    color: "hsl(45 93% 47%)",
+  },
+  recommended: {
+    label: "Rekomendasi",
+    color: "hsl(142 71% 45%)",
+  },
+} satisfies ChartConfig;
 
+export function RankingChart({ results }: RankingChartProps) {
   // 1. Find User Input
   const userAlt = results.find((r) => r.isUserObj);
 
@@ -35,9 +47,6 @@ export function RankingChart({ results }: RankingChartProps) {
 
   // 3. Combine
   const chartData = userAlt ? [userAlt, ...top3] : top3;
-
-  // Sort by score ascending for horizontal bar (Top at top implies bottom in chart data? Or just visualize comparison)
-  // Usually Horizontal Bar Chart: YAxis is Name, XAxis is Score.
 
   return (
     <Card className="rounded-xl border-gray-200 shadow-sm">
@@ -48,56 +57,48 @@ export function RankingChart({ results }: RankingChartProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer height="100%" width="100%">
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{
-                top: 5,
-                right: 30,
-                left: 40,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid
-                horizontal={true}
-                strokeDasharray="3 3"
-                vertical={false}
-              />
-              <XAxis domain={[0, 1]} hide type="number" />
-              <YAxis
-                dataKey="name"
-                interval={0}
-                tick={{ fontSize: 12 }}
-                type="category"
-                width={100}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "8px",
-                  border: "none",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                }}
-                cursor={{ fill: "transparent" }}
-              />
-              <Bar barSize={32} dataKey="score" radius={[0, 4, 4, 0]}>
-                {chartData.map((entry, index) => (
-                  <Cell
-                    fill={
-                      entry.isUserObj
-                        ? "#3b82f6"
-                        : index === 0 && !entry.isUserObj && !userAlt
-                          ? "#eab308"
-                          : "#22c55e"
-                    }
-                    key={`cell-${entry.id}`}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartContainer className="h-[300px] w-full" config={chartConfig}>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{
+              top: 5,
+              right: 30,
+              left: 40,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid
+              horizontal={true}
+              strokeDasharray="3 3"
+              vertical={false}
+            />
+            <XAxis domain={[0, 1]} hide type="number" />
+            <YAxis
+              dataKey="name"
+              interval={0}
+              tick={{ fontSize: 12 }}
+              type="category"
+              width={100}
+            />
+            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <Bar barSize={32} dataKey="score" radius={[0, 4, 4, 0]}>
+              {chartData.map((entry, index) => {
+                const getColor = () => {
+                  if (entry.isUserObj) {
+                    return chartConfig.user.color;
+                  }
+                  if (index === 0 && !userAlt) {
+                    return chartConfig.top.color;
+                  }
+                  return chartConfig.recommended.color;
+                };
+
+                return <Cell fill={getColor()} key={`cell-${entry.id}`} />;
+              })}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
       </CardContent>
     </Card>
   );
