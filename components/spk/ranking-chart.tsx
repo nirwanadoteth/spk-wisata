@@ -17,7 +17,7 @@ import {
 import type { Alternative } from "@/lib/types";
 
 interface RankingChartProps {
-  results: Alternative[];
+  results: readonly Alternative[];
 }
 
 const chartConfig = {
