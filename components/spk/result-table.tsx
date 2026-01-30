@@ -1,3 +1,7 @@
+"use client";
+
+import { ArrowDown, ArrowUp, ArrowUpDown, Trophy } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,11 +13,43 @@ import {
 import type { Alternative } from "@/lib/types";
 
 /**
+ * Sort direction type
+ */
+type SortDirection = "asc" | "desc" | null;
+
+/**
+ * Sortable column keys
+ */
+type SortableColumn = "rank" | "name" | "score" | "c1" | "c2" | "c3" | "c4";
+
+/**
  * Props for ResultTable component
  */
 interface ResultTableProps {
   /** Array of tourism destinations with TOPSIS scores, sorted by rank */
   results: readonly Alternative[];
+}
+
+/**
+ * Sort Icon Component
+ * Displays appropriate icon based on sort state
+ */
+function SortIcon({
+  column,
+  sortColumn,
+  sortDirection,
+}: {
+  column: SortableColumn;
+  sortColumn: SortableColumn | null;
+  sortDirection: SortDirection;
+}) {
+  if (sortColumn !== column) {
+    return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />;
+  }
+  if (sortDirection === "asc") {
+    return <ArrowUp className="h-3.5 w-3.5 text-green-600" />;
+  }
+  return <ArrowDown className="h-3.5 w-3.5 text-green-600" />;
 }
 
 /**
@@ -23,6 +59,7 @@ interface ResultTableProps {
  * Shows rank, name, final score, and criteria values with visual indicators.
  *
  * Features:
+ * - Sortable columns with visual indicators
  * - Rank badges with special styling for top 3
  * - User-submitted destinations highlighted in blue
  * - Score visualization with progress bars
@@ -35,6 +72,75 @@ interface ResultTableProps {
  * ```
  */
 export function ResultTable({ results }: ResultTableProps) {
+  const [sortColumn, setSortColumn] = useState<SortableColumn | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  /**
+   * Handle column header click for sorting
+   * Cycles through: null -> asc -> desc -> null
+   */
+  const handleSort = (column: SortableColumn) => {
+    if (sortColumn !== column) {
+      setSortColumn(column);
+      setSortDirection("asc");
+    } else if (sortDirection === "asc") {
+      setSortDirection("desc");
+    } else if (sortDirection === "desc") {
+      setSortColumn(null);
+      setSortDirection(null);
+    } else {
+      setSortDirection("asc");
+    }
+  };
+
+  /**
+   * Sort results based on current sort state
+   * React 19.2: useMemo automatically optimized by React Compiler
+   */
+  const sortedResults = useMemo(() => {
+    if (!(sortColumn && sortDirection)) {
+      return results;
+    }
+
+    const sorted = [...results].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      if (sortColumn === "name") {
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+      } else if (sortColumn === "score" || sortColumn === "rank") {
+        // Rank sorting is based on score (lower rank = higher score)
+        aValue = a.score ?? 0;
+        bValue = b.score ?? 0;
+      } else {
+        aValue = a[sortColumn];
+        bValue = b[sortColumn];
+      }
+
+      if (aValue < bValue) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [results, sortColumn, sortDirection]);
+
+  /**
+   * Create a map of original ranks based on TOPSIS score
+   * This preserves the original ranking even when table is sorted by other columns
+   */
+  const originalRanks = useMemo(() => {
+    const rankMap = new Map<string, number>();
+    results.forEach((alt, index) => {
+      rankMap.set(alt.id, index + 1);
+    });
+    return rankMap;
+  }, [results]);
   if (results.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
@@ -50,34 +156,77 @@ export function ResultTable({ results }: ResultTableProps) {
           <Table>
             <TableHeader className="border-gray-100 border-b bg-gray-50">
               <TableRow>
-                <TableHead className="w-[80px] text-center font-semibold text-gray-600 text-xs uppercase">
-                  Rank
+                <TableHead
+                  className="w-[80px] cursor-pointer text-center font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
+                  onClick={() => handleSort("rank")}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    Rank
+                    <SortIcon
+                      column="rank"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                    />
+                  </div>
                 </TableHead>
-                <TableHead className="font-semibold text-gray-600 text-xs uppercase">
-                  Nama Wisata
+                <TableHead
+                  className="cursor-pointer font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center gap-2">
+                    Nama Wisata
+                    <SortIcon
+                      column="name"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                    />
+                  </div>
                 </TableHead>
-                <TableHead className="text-center font-semibold text-gray-600 text-xs uppercase">
-                  Nilai Akhir
+                <TableHead
+                  className="cursor-pointer text-center font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
+                  onClick={() => handleSort("score")}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    Nilai Akhir
+                    <SortIcon
+                      column="score"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                    />
+                  </div>
                 </TableHead>
-                <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase">
-                  Aksesibilitas
+                <TableHead
+                  className="cursor-pointer text-right font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
+                  onClick={() => handleSort("c1")}
+                >
+                  <div className="flex items-center justify-end gap-2">
+                    Aksesibilitas
+                    <SortIcon
+                      column="c1"
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                    />
+                  </div>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-50">
-              {results.map((alt, index) => {
+              {sortedResults.map((alt) => {
+                // Get original rank from the map (based on TOPSIS score)
+                const originalRank = originalRanks.get(alt.id) ?? 0;
+
                 /**
-                 * Determine rank badge styling
+                 * Determine rank badge styling based on original rank
                  * Gold for 1st, Silver for 2nd, Bronze for 3rd
                  */
                 let rankBadgeClass = "bg-gray-100 text-gray-600";
-                if (index === 0) {
+                if (originalRank === 1) {
                   rankBadgeClass = "bg-yellow-100 text-yellow-700 shadow-sm"; // Gold
                 }
-                if (index === 1) {
+                if (originalRank === 2) {
                   rankBadgeClass = "bg-gray-100 text-gray-700 shadow-sm"; // Silver
                 }
-                if (index === 2) {
+                if (originalRank === 3) {
                   rankBadgeClass = "bg-orange-50 text-orange-700 shadow-sm"; // Bronze
                 }
 
@@ -93,7 +242,11 @@ export function ResultTable({ results }: ResultTableProps) {
                       <div
                         className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full font-bold text-xs ${rankBadgeClass}`}
                       >
-                        #{index + 1}
+                        {originalRank <= 3 ? (
+                          <Trophy className="h-4 w-4" />
+                        ) : (
+                          `#${originalRank}`
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="p-4">
