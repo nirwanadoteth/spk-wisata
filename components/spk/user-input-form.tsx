@@ -98,7 +98,6 @@ export function UserInputForm({
       c2: Number.parseInt(values.c2, 10),
       c3: Number.parseInt(values.c3, 10),
       c4: Number.parseInt(values.c4, 10),
-      isUserObj: true,
     };
     onSubmitUser(newAlternative);
   };
