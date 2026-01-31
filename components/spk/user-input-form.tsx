@@ -39,43 +39,60 @@ interface UserInputFormProps {
   onSubmitUser: (data: Alternative) => void;
   /** Callback to close the form modal */
   onClose: () => void;
+  /** Optional existing data for editing mode */
+  existingData?: Alternative;
 }
 
 /**
  * User Input Form Component
  *
- * Form for adding custom tourism destinations to compare against recommendations.
+ * Form for adding or editing custom tourism destinations to compare against recommendations.
  * Uses React Hook Form with Zod validation for type-safe form handling.
  *
  * @component
  * @example
  * ```tsx
+ * // Create mode
  * <UserInputForm
+ *   onSubmitUser={(alt) => console.log(alt)}
+ *   onClose={() => setOpen(false)}
+ * />
+ *
+ * // Edit mode
+ * <UserInputForm
+ *   existingData={alternative}
  *   onSubmitUser={(alt) => console.log(alt)}
  *   onClose={() => setOpen(false)}
  * />
  * ```
  */
-export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
+export function UserInputForm({
+  onSubmitUser,
+  onClose,
+  existingData,
+}: UserInputFormProps) {
+  const isEditMode = !!existingData;
+
   const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      c1: "",
-      c2: "",
-      c3: "",
-      c4: "",
+      name: existingData?.name ?? "",
+      c1: existingData?.c1.toString() ?? "",
+      c2: existingData?.c2.toString() ?? "",
+      c3: existingData?.c3.toString() ?? "",
+      c4: existingData?.c4.toString() ?? "",
     },
   });
 
   /**
    * Handles form submission
    * Converts form values to Alternative type and passes to parent
+   * In edit mode, preserves the existing ID; in create mode, generates a new UUID
    * React 19.2 note: No need for useCallback with React Compiler enabled
    */
   const onSubmit = (values: FormValues) => {
     const newAlternative: Alternative = {
-      id: `user-${crypto.randomUUID()}`,
+      id: existingData?.id ?? `user-${crypto.randomUUID()}`,
       name: values.name,
       c1: Number.parseInt(values.c1, 10),
       c2: Number.parseInt(values.c2, 10),
@@ -88,6 +105,16 @@ export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
 
   return (
     <div className="h-fit w-full">
+      <div className="mb-4">
+        <h2 className="font-bold text-gray-800 text-xl">
+          {isEditMode ? "Edit Objek Wisata" : "Tambah Objek Wisata Baru"}
+        </h2>
+        <p className="mt-1 text-gray-600 text-sm">
+          {isEditMode
+            ? "Perbarui informasi objek wisata"
+            : "Masukkan informasi objek wisata yang ingin dibandingkan"}
+        </p>
+      </div>
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
@@ -218,7 +245,7 @@ export function UserInputForm({ onSubmitUser, onClose }: UserInputFormProps) {
             className="w-1/2 bg-green-600 hover:bg-green-700"
             type="submit"
           >
-            Simpan
+            {isEditMode ? "Perbarui" : "Simpan"}
           </Button>
         </div>
       </form>
