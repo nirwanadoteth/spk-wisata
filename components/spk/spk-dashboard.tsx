@@ -2,6 +2,16 @@
 
 import { Award, MapPin, Plus, Search, TrendingUp } from "lucide-react";
 import { type ChangeEvent, useMemo, useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -32,18 +42,63 @@ import { UserInputForm } from "./user-input-form";
  * ```
  */
 export function SpkDashboard() {
-  const [userAlternatives, setUserAlternatives] = useState<Alternative[]>([]);
+  // Gabungkan data awal dengan data user input seperti di project referensi
+  const [data, setData] = useState<Alternative[]>(INITIAL_ALTERNATIVES);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAlternative, setEditingAlternative] =
+    useState<Alternative | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   /**
    * Handles submission of user-defined tourism destination
-   * Replaces any existing user destination to avoid clutter
+   * Menambahkan destinasi baru ke dalam data
    */
   const handleUserSubmit = (alt: Alternative) => {
-    const nonUser = userAlternatives.filter((a) => !a.isUserObj);
-    setUserAlternatives([...nonUser, alt]);
+    setData((prev) => [...prev, alt]);
     setIsModalOpen(false);
+  };
+
+  /**
+   * Handles editing of an existing user-submitted destination
+   * Updates the alternative with new values while preserving id
+   */
+  const handleEdit = (alt: Alternative) => {
+    setEditingAlternative(alt);
+    setIsModalOpen(true);
+  };
+
+  /**
+   * Handles update of an edited destination
+   * Replaces the old alternative with the updated one
+   */
+  const handleUpdate = (updatedAlt: Alternative) => {
+    setData((prev) =>
+      prev.map((a) => (a.id === updatedAlt.id ? updatedAlt : a))
+    );
+    setEditingAlternative(null);
+    setIsModalOpen(false);
+  };
+
+  /**
+   * Handles deletion of a user-submitted destination
+   * Removes the alternative from the list after confirmation
+   */
+  const handleDelete = (alternativeId: string) => {
+    setDeleteTargetId(alternativeId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  /**
+   * Confirms and executes the deletion
+   */
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      setData((prev) => prev.filter((a) => a.id !== deleteTargetId));
+      setDeleteTargetId(null);
+    }
+    setIsDeleteDialogOpen(false);
   };
 
   /**
@@ -61,11 +116,9 @@ export function SpkDashboard() {
    * critical, but we keep useMemo for expensive TOPSIS calculations
    */
   const { results } = useMemo(() => {
-    // Combine initial destinations with user-submitted ones
-    const allAlternatives = [...INITIAL_ALTERNATIVES, ...userAlternatives];
-
+    // Data sudah berisi gabungan initial + user input
     // Run TOPSIS algorithm to calculate preference scores
-    const topsisResult = calculateTOPSIS(allAlternatives);
+    const topsisResult = calculateTOPSIS(data);
 
     // Apply search filter if query exists
     const finalResults = searchQuery
@@ -78,7 +131,7 @@ export function SpkDashboard() {
       results: finalResults,
       calculationDetails: topsisResult,
     };
-  }, [userAlternatives, searchQuery]);
+  }, [data, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900">
@@ -104,8 +157,14 @@ export function SpkDashboard() {
               />
               <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
                 <UserInputForm
-                  onClose={() => setIsModalOpen(false)}
-                  onSubmitUser={handleUserSubmit}
+                  existingData={editingAlternative ?? undefined}
+                  onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingAlternative(null);
+                  }}
+                  onSubmitUser={
+                    editingAlternative ? handleUpdate : handleUserSubmit
+                  }
                 />
               </DialogContent>
             </Dialog>
@@ -216,9 +275,38 @@ export function SpkDashboard() {
             </div>
           </div>
 
-          <ResultTable results={results} />
+          <ResultTable
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            results={results}
+          />
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        onOpenChange={setIsDeleteDialogOpen}
+        open={isDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data ini akan dihapus secara permanen dan tidak dapat dikembalikan
+              lagi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={confirmDelete}
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
