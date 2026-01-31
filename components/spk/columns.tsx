@@ -7,7 +7,6 @@ import {
   ChevronsUpDown,
   Pencil,
   Trash2,
-  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Alternative } from "@/lib/types";
@@ -15,11 +14,17 @@ import type { Alternative } from "@/lib/types";
 /**
  * Get sort icon based on sort state
  */
-const getSortIcon = (isSorted: false | "asc" | "desc") => {
+const getSortIcon = (isSorted: false | "asc" | "desc", id?: string) => {
   if (isSorted === "asc") {
+    if (id === "rank") {
+      return <ArrowDown className="ml-2 h-3.5 w-3.5" />;
+    }
     return <ArrowUp className="ml-2 h-3.5 w-3.5" />;
   }
   if (isSorted === "desc") {
+    if (id === "rank") {
+      return <ArrowUp className="ml-2 h-3.5 w-3.5" />;
+    }
     return <ArrowDown className="ml-2 h-3.5 w-3.5" />;
   }
   return <ChevronsUpDown className="ml-2 h-3.5 w-3.5" />;
@@ -45,7 +50,7 @@ export const createColumns = (
           variant="ghost"
         >
           Rank
-          {getSortIcon(column.getIsSorted())}
+          {getSortIcon(column.getIsSorted(), column.id)}
         </Button>
       );
     },
@@ -65,7 +70,7 @@ export const createColumns = (
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold text-sm ${bgClass}`}
         >
-          {rank <= 3 ? <Trophy className="h-4 w-4" /> : `#${rank}`}
+          #{rank}
         </div>
       );
     },
@@ -135,7 +140,7 @@ export const createColumns = (
     accessorKey: "c1",
     header: ({ column }) => {
       return (
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <Button
             className="h-8 px-2 hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -149,7 +154,7 @@ export const createColumns = (
     },
     cell: ({ row }) => {
       return (
-        <div className="text-right font-mono text-gray-600">
+        <div className="text-center font-mono text-gray-600">
           {row.original.c1}
         </div>
       );
@@ -161,7 +166,7 @@ export const createColumns = (
     cell: ({ row }) => {
       const alt = row.original;
       return (
-        <div className="flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover/row:opacity-100">
+        <div className="flex items-center justify-center gap-2">
           <Button
             className="h-8 w-8 border-blue-200 p-0 text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
             onClick={() => onEdit?.(alt)}
