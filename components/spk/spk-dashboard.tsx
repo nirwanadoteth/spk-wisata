@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
   AlertDialog,
@@ -122,8 +123,14 @@ export function SpkDashboard() {
       <div className="sticky top-0 z-30 border-gray-200 border-b bg-white shadow-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600 font-bold text-lg text-white shadow-green-200 shadow-lg">
-              C
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
+              <Image
+                alt="Logo"
+                className="h-full w-full object-cover"
+                height={32}
+                src="/icon-192.png"
+                width={32}
+              />
             </div>
             <h1 className="font-bold text-gray-800 text-xl tracking-tight">
               Ciwidey<span className="text-green-600">SPK</span>
