@@ -92,8 +92,7 @@ export const createColumns = (
             {alt.name}
           </div>
           <div className="mt-0.5 font-mono text-gray-400 text-xs">
-            KAJ: {alt.c2.toFixed(1)} | KF: {alt.c3.toFixed(1)} | KB:{" "}
-            {alt.c4.toFixed(1)}
+            KAJ: {alt.c2} | KF: {alt.c3} | KB: {alt.c4}
           </div>
         </div>
       );
@@ -151,7 +150,7 @@ export const createColumns = (
     cell: ({ row }) => {
       return (
         <div className="text-right font-mono text-gray-600">
-          {row.original.c1.toFixed(2)}
+          {row.original.c1}
         </div>
       );
     },
