@@ -116,7 +116,12 @@ export function RankingChart({ results }: RankingChartProps) {
                 className="fill-foreground"
                 dataKey="score"
                 fontSize={11}
-                formatter={(value: number) => value.toFixed(3)}
+                formatter={(value: number) => {
+                  if (Number.isInteger(value)) {
+                    return value.toString();
+                  }
+                  return value.toFixed(4);
+                }}
                 offset={8}
                 position="right"
               />
