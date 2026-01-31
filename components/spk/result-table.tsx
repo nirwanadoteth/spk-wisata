@@ -1,34 +1,28 @@
 "use client";
 
 import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Pencil,
-  Trash2,
-  Trophy,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+  type ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Search } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import type { Alternative } from "@/lib/types";
-
-/**
- * Sort direction type
- */
-type SortDirection = "asc" | "desc" | null;
-
-/**
- * Sortable column keys
- */
-type SortableColumn = "rank" | "name" | "score" | "c1" | "c2" | "c3" | "c4";
+import { createColumns } from "./columns";
 
 /**
  * Props for ResultTable component
@@ -43,297 +37,142 @@ interface ResultTableProps {
 }
 
 /**
- * Sort Icon Component
- * Displays appropriate icon based on sort state
- */
-function SortIcon({
-  column,
-  sortColumn,
-  sortDirection,
-}: {
-  column: SortableColumn;
-  sortColumn: SortableColumn | null;
-  sortDirection: SortDirection;
-}) {
-  if (sortColumn !== column) {
-    return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />;
-  }
-  if (sortDirection === "asc") {
-    return <ArrowUp className="h-3.5 w-3.5 text-green-600" />;
-  }
-  return <ArrowDown className="h-3.5 w-3.5 text-green-600" />;
-}
-
-/**
  * Result Table Component
  *
- * Displays detailed ranking table with all evaluated tourism destinations.
+ * Displays detailed ranking table with all evaluated tourism destinations using TanStack Table.
  * Shows rank, name, final score, and criteria values with visual indicators.
  *
  * Features:
- * - Sortable columns with visual indicators
+ * - Sortable columns with TanStack Table
  * - Rank badges with special styling for top 3
  * - User-submitted destinations highlighted in blue
  * - Score visualization with progress bars
  * - Criteria values displayed as metadata
+ * - Edit and delete actions
  *
  * @component
- * @example
- * ```tsx
- * <ResultTable results={rankedAlternatives} />
- * ```
  */
 export function ResultTable({ results, onEdit, onDelete }: ResultTableProps) {
-  const [sortColumn, setSortColumn] = useState<SortableColumn | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  "use no memo";
 
-  /**
-   * Handle column header click for sorting
-   * Cycles through: null -> asc -> desc -> null
-   */
-  const handleSort = (column: SortableColumn) => {
-    if (sortColumn !== column) {
-      setSortColumn(column);
-      setSortDirection("asc");
-    } else if (sortDirection === "asc") {
-      setSortDirection("desc");
-    } else if (sortDirection === "desc") {
-      setSortColumn(null);
-      setSortDirection(null);
-    } else {
-      setSortDirection("asc");
-    }
-  };
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "rank", desc: true },
+  ]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  /**
-   * Sort results based on current sort state
-   * React 19.2: useMemo automatically optimized by React Compiler
-   */
-  const sortedResults = useMemo(() => {
-    if (!(sortColumn && sortDirection)) {
-      return results;
-    }
+  const columns = createColumns(onEdit, onDelete);
 
-    const sorted = [...results].sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
-
-      if (sortColumn === "name") {
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-      } else if (sortColumn === "score" || sortColumn === "rank") {
-        // Rank sorting is based on score (lower rank = higher score)
-        aValue = a.score ?? 0;
-        bValue = b.score ?? 0;
-      } else {
-        aValue = a[sortColumn];
-        bValue = b[sortColumn];
-      }
-
-      if (aValue < bValue) {
-        return sortDirection === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortDirection === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-
-    return sorted;
-  }, [results, sortColumn, sortDirection]);
-
-  /**
-   * Create a map of original ranks based on TOPSIS score
-   * This preserves the original ranking even when table is sorted by other columns
-   */
-  const originalRanks = useMemo(() => {
-    const rankMap = new Map<string, number>();
-    results.forEach((alt, index) => {
-      rankMap.set(alt.id, index + 1);
-    });
-    return rankMap;
-  }, [results]);
-  if (results.length === 0) {
-    return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
-        <p className="text-gray-400 text-lg">Tidak ada data ditemukan.</p>
-      </div>
-    );
-  }
+  const table = useReactTable({
+    data: results as Alternative[],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      columnFilters,
+    },
+  });
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="border-gray-100 border-b bg-gray-50">
-              <TableRow>
-                <TableHead
-                  className="w-[80px] cursor-pointer text-center font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
-                  onClick={() => handleSort("rank")}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    Rank
-                    <SortIcon
-                      column="rank"
-                      sortColumn={sortColumn}
-                      sortDirection={sortDirection}
-                    />
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
-                  onClick={() => handleSort("name")}
-                >
-                  <div className="flex items-center gap-2">
-                    Nama Wisata
-                    <SortIcon
-                      column="name"
-                      sortColumn={sortColumn}
-                      sortDirection={sortDirection}
-                    />
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer text-center font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
-                  onClick={() => handleSort("score")}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    Nilai Akhir
-                    <SortIcon
-                      column="score"
-                      sortColumn={sortColumn}
-                      sortDirection={sortDirection}
-                    />
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer text-right font-semibold text-gray-600 text-xs uppercase transition-colors hover:text-green-600"
-                  onClick={() => handleSort("c1")}
-                >
-                  <div className="flex items-center justify-end gap-2">
-                    Aksesibilitas
-                    <SortIcon
-                      column="c1"
-                      sortColumn={sortColumn}
-                      sortDirection={sortDirection}
-                    />
-                  </div>
-                </TableHead>
-                <TableHead className="w-[120px] text-center font-semibold text-gray-600 text-xs uppercase">
-                  Aksi
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-gray-50">
-              {sortedResults.map((alt) => {
-                // Get original rank from the map (based on TOPSIS score)
-                const originalRank = originalRanks.get(alt.id) ?? 0;
-
-                /**
-                 * Determine rank badge styling based on original rank
-                 * Gold for 1st, Silver for 2nd, Bronze for 3rd
-                 */
-                let rankBadgeClass = "bg-gray-100 text-gray-600";
-                if (originalRank === 1) {
-                  rankBadgeClass = "bg-yellow-100 text-yellow-700 shadow-sm"; // Gold
-                }
-                if (originalRank === 2) {
-                  rankBadgeClass = "bg-gray-100 text-gray-700 shadow-sm"; // Silver
-                }
-                if (originalRank === 3) {
-                  rankBadgeClass = "bg-orange-50 text-orange-700 shadow-sm"; // Bronze
-                }
-
-                // Highlight user-submitted destinations
-                const isUserRow = alt.isUserObj;
-                const rowClass = isUserRow
-                  ? "bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500 transition-colors group relative"
-                  : "hover:bg-green-50/30 transition-colors group";
-
-                return (
-                  <TableRow className={rowClass} key={alt.id}>
-                    <TableCell className="p-4 text-center">
-                      <div
-                        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full font-bold text-xs ${rankBadgeClass}`}
-                      >
-                        {originalRank <= 3 ? (
-                          <Trophy className="h-4 w-4" />
-                        ) : (
-                          `#${originalRank}`
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-4">
-                      <div className="flex items-center gap-2 font-semibold text-base text-gray-900">
-                        {alt.name}
-                        {isUserRow && (
-                          <span className="rounded-full bg-blue-100 px-2 py-0.5 font-bold text-[10px] text-blue-700 uppercase tracking-wider">
-                            Anda
-                          </span>
-                        )}
-                      </div>
-                      {/* Display C2 (Daya Tarik), C3 (Fasilitas), and C4 (Kualitas Layanan) as key highlights */}
-                      <div className="mt-0.5 font-mono text-gray-400 text-xs">
-                        DT: {alt.c2.toFixed(1)} | F: {alt.c3.toFixed(1)} | KL:{" "}
-                        {alt.c4.toFixed(1)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-4 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="font-bold font-mono text-base text-green-600">
-                          {alt.score?.toFixed(4)}
-                        </span>
-                        {/* Visual Progress Bar */}
-                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-100">
-                          <div
-                            className="h-full rounded-full bg-green-500"
-                            style={{ width: `${(alt.score || 0) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </TableCell>
-                    {/* C1: Aksesibilitas */}
-                    <TableCell className="p-4 text-right font-mono text-gray-600">
-                      {alt.c1.toFixed(2)}
-                    </TableCell>
-                    {/* Action buttons - tersedia untuk semua row */}
-                    <TableCell className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          className="h-8 w-8 border-blue-200 p-0 text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                          onClick={() => onEdit?.(alt)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          className="h-8 w-8 border-red-200 p-0 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-                          onClick={() => onDelete?.(alt.id)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+      <div className="flex items-center justify-end">
+        <div className="relative w-full md:w-64">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            aria-label="Filter tabel destinasi wisata"
+            className="rounded-xl border-gray-200 bg-white pl-10"
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
+            placeholder="Cari destinasi wisata..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          />
         </div>
-        {/* Footer with legend */}
-        <div className="border-gray-100 border-t bg-gray-50 px-6 py-3">
-          <div className="flex items-center gap-1 text-gray-500 text-xs">
-            <span className="font-semibold">Keterangan:</span>
-            <span className="font-mono">DT = Daya Tarik</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-mono">F = Fasilitas</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-mono">KL = Kualitas Layanan</span>
-          </div>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      className={`h-12 bg-gray-50 ${
+                        (
+                          header.column.columnDef.meta as
+                            | { className?: string }
+                            | undefined
+                        )?.className || ""
+                      }`}
+                      key={header.id}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    className="group/row border-gray-100 transition-colors hover:bg-gray-50/50"
+                    data-state={row.getIsSelected() && "selected"}
+                    key={row.id}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        className={`p-4 ${
+                          (
+                            cell.column.columnDef.meta as
+                              | { className?: string }
+                              | undefined
+                          )?.className || ""
+                        }`}
+                        key={cell.id}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center"
+                    colSpan={columns.length}
+                  >
+                    Tidak ada data.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell className="bg-gray-50 py-3" colSpan={columns.length}>
+                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                    <span className="font-semibold">Keterangan:</span>
+                    <span className="font-mono">DT = Daya Tarik</span>
+                    <span className="text-gray-300">|</span>
+                    <span className="font-mono">F = Fasilitas</span>
+                    <span className="text-gray-300">|</span>
+                    <span className="font-mono">KL = Kualitas Layanan</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       </div>
     </div>
