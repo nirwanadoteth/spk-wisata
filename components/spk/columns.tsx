@@ -14,17 +14,11 @@ import type { Alternative } from "@/lib/types";
 /**
  * Get sort icon based on sort state
  */
-const getSortIcon = (isSorted: false | "asc" | "desc", id?: string) => {
+const getSortIcon = (isSorted: false | "asc" | "desc") => {
   if (isSorted === "asc") {
-    if (id === "rank") {
-      return <ArrowDown className="ml-2 h-3.5 w-3.5" />;
-    }
     return <ArrowUp className="ml-2 h-3.5 w-3.5" />;
   }
   if (isSorted === "desc") {
-    if (id === "rank") {
-      return <ArrowUp className="ml-2 h-3.5 w-3.5" />;
-    }
     return <ArrowDown className="ml-2 h-3.5 w-3.5" />;
   }
   return <ChevronsUpDown className="ml-2 h-3.5 w-3.5" />;
@@ -35,10 +29,22 @@ export const createColumns = (
   onDelete?: (alternativeId: string) => void
 ): ColumnDef<Alternative>[] => [
   {
-    accessorKey: "score",
+    accessorKey: "rank",
     id: "rank",
     size: 80,
     maxSize: 80,
+    sortingFn: (rowA, rowB) => {
+      const rankA = rowA.original.rank || 0;
+      const rankB = rowB.original.rank || 0;
+
+      // Primary sort by rank
+      if (rankA !== rankB) {
+        return rankA > rankB ? 1 : -1;
+      }
+
+      // Secondary sort by name (A-Z) for consistent tiebreaker
+      return rowA.original.name.localeCompare(rowB.original.name);
+    },
     meta: {
       className: "w-20",
     },
@@ -50,12 +56,12 @@ export const createColumns = (
           variant="ghost"
         >
           Rank
-          {getSortIcon(column.getIsSorted(), column.id)}
+          {getSortIcon(column.getIsSorted())}
         </Button>
       );
     },
     cell: ({ row }) => {
-      const rank = row.index + 1;
+      const rank = row.original.rank || row.index + 1;
 
       let bgClass = "bg-gray-50 text-gray-500";
       if (rank === 1) {
