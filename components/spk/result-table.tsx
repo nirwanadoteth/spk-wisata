@@ -55,9 +55,7 @@ interface ResultTableProps {
 export function ResultTable({ results, onEdit, onDelete }: ResultTableProps) {
   "use no memo";
 
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "rank", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const columns = createColumns(onEdit, onDelete);
