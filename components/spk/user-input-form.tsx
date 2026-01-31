@@ -23,10 +23,10 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Nama harus diisi minimal 2 karakter.",
   }),
-  c1: z.string().min(1, "Pilih nilai Aksesibilitas"),
-  c2: z.string().min(1, "Pilih nilai Daya Tarik"),
-  c3: z.string().min(1, "Pilih nilai Fasilitas"),
-  c4: z.string().min(1, "Pilih nilai Kualitas Layanan"),
+  c1: z.string().min(1, "Pilih nilai Keindahan Alam"),
+  c2: z.string().min(1, "Pilih nilai Kondisi Akses Jalan"),
+  c3: z.string().min(1, "Pilih nilai Ketersediaan Fasilitas"),
+  c4: z.string().min(1, "Pilih nilai Kebersihan"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -133,22 +133,22 @@ export function UserInputForm({
           )}
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* C1: Aksesibilitas */}
+          {/* C1: Keindahan Alam */}
           <Controller
             control={control}
             name="c1"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="responsive">
-                <FieldLabel>Aksesibilitas</FieldLabel>
+                <FieldLabel>Keindahan Alam</FieldLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Pilih Aksesibilitas" />
+                    <SelectValue placeholder="Pilih Keindahan Alam" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="4">4 - Sangat Mudah</SelectItem>
-                    <SelectItem value="3">3 - Mudah</SelectItem>
-                    <SelectItem value="2">2 - Cukup</SelectItem>
-                    <SelectItem value="1">1 - Sulit</SelectItem>
+                    <SelectItem value="4">4 - Sangat Indah</SelectItem>
+                    <SelectItem value="3">3 - Indah</SelectItem>
+                    <SelectItem value="2">2 - Cukup Indah</SelectItem>
+                    <SelectItem value="1">1 - Kurang Indah</SelectItem>
                   </SelectContent>
                 </Select>
                 {fieldState.invalid && (
@@ -158,72 +158,72 @@ export function UserInputForm({
             )}
           />
 
-          {/* C2: Daya Tarik */}
+          {/* C2: Kondisi Akses Jalan */}
           <Controller
             control={control}
             name="c2"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="responsive">
-                <FieldLabel>Daya Tarik</FieldLabel>
+                <FieldLabel>Kondisi Akses Jalan</FieldLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Pilih Daya Tarik" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="4">4 - Sangat Menarik</SelectItem>
-                    <SelectItem value="3">3 - Menarik</SelectItem>
-                    <SelectItem value="2">2 - Cukup Menarik</SelectItem>
-                    <SelectItem value="1">1 - Kurang Menarik</SelectItem>
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          {/* C3: Fasilitas */}
-          <Controller
-            control={control}
-            name="c3"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="responsive">
-                <FieldLabel>Fasilitas</FieldLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Pilih Kelengkapan Fasilitas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="4">4 - Sangat Lengkap</SelectItem>
-                    <SelectItem value="3">3 - Lengkap</SelectItem>
-                    <SelectItem value="2">2 - Cukup</SelectItem>
-                    <SelectItem value="1">1 - Kurang</SelectItem>
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          {/* C4: Kualitas Layanan */}
-          <Controller
-            control={control}
-            name="c4"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="responsive">
-                <FieldLabel>Kualitas Layanan</FieldLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Pilih Kualitas Layanan" />
+                    <SelectValue placeholder="Pilih Kondisi Akses Jalan" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="4">4 - Sangat Baik</SelectItem>
                     <SelectItem value="3">3 - Baik</SelectItem>
                     <SelectItem value="2">2 - Cukup</SelectItem>
-                    <SelectItem value="1">1 - Kurang</SelectItem>
+                    <SelectItem value="1">1 - Buruk</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          {/* C3: Ketersediaan Fasilitas */}
+          <Controller
+            control={control}
+            name="c3"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="responsive">
+                <FieldLabel>Ketersediaan Fasilitas</FieldLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger aria-invalid={fieldState.invalid}>
+                    <SelectValue placeholder="Pilih Ketersediaan Fasilitas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="4">4 - Sangat Lengkap</SelectItem>
+                    <SelectItem value="3">3 - Lengkap</SelectItem>
+                    <SelectItem value="2">2 - Cukup Lengkap</SelectItem>
+                    <SelectItem value="1">1 - Kurang Lengkap</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          {/* C4: Kebersihan */}
+          <Controller
+            control={control}
+            name="c4"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="responsive">
+                <FieldLabel>Kebersihan</FieldLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger aria-invalid={fieldState.invalid}>
+                    <SelectValue placeholder="Pilih Kebersihan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="4">4 - Sangat Bersih</SelectItem>
+                    <SelectItem value="3">3 - Bersih</SelectItem>
+                    <SelectItem value="2">2 - Cukup Bersih</SelectItem>
+                    <SelectItem value="1">1 - Kotor</SelectItem>
                   </SelectContent>
                 </Select>
                 {fieldState.invalid && (
