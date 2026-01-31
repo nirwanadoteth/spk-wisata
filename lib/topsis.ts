@@ -94,11 +94,30 @@ export function calculateTOPSIS(
     };
   });
 
-  // 5. Ranking (sort by score descending)
-  scoredAlternatives.sort((a, b) => (b.score || 0) - (a.score || 0));
+  // 5. Ranking (sort by score descending, then by name ascending for ties)
+  scoredAlternatives.sort((a, b) => {
+    const scoreA = a.score || 0;
+    const scoreB = b.score || 0;
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  // 6. Assign ranks (considering ties)
+  const rankedAlternatives = scoredAlternatives.map((alt) => {
+    // Find actual rank by counting alternatives with higher score
+    let rank = 1;
+    for (const other of scoredAlternatives) {
+      if ((other.score || 0) > (alt.score || 0)) {
+        rank++;
+      }
+    }
+    return { ...alt, rank };
+  });
 
   return {
-    alternatives: scoredAlternatives,
+    alternatives: rankedAlternatives,
     idealPositive: Object.fromEntries(idealPositive) as Record<
       CriteriaId,
       number
