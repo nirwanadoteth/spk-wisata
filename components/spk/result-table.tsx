@@ -163,11 +163,13 @@ export function ResultTable({ results, onEdit, onDelete }: ResultTableProps) {
                 <TableCell className="bg-gray-50 py-3" colSpan={columns.length}>
                   <div className="flex items-center gap-1 text-gray-500 text-xs">
                     <span className="font-semibold">Keterangan:</span>
-                    <span className="font-mono">DT = Daya Tarik</span>
+                    <span className="font-mono">KAJ = Kondisi Akses Jalan</span>
                     <span className="text-gray-300">|</span>
-                    <span className="font-mono">F = Fasilitas</span>
+                    <span className="font-mono">
+                      KF = Ketersediaan Fasilitas
+                    </span>
                     <span className="text-gray-300">|</span>
-                    <span className="font-mono">KL = Kualitas Layanan</span>
+                    <span className="font-mono">KB = Kebersihan</span>
                   </div>
                 </TableCell>
               </TableRow>
