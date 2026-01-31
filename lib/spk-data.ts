@@ -34,5 +34,5 @@ export const INITIAL_ALTERNATIVES: Alternative[] = [
   { id: "3", name: "Ranca Upas", c1: 4, c2: 3, c3: 4, c4: 3 },
   { id: "4", name: "Air Panas Ciwalini", c1: 3, c2: 3, c3: 4, c4: 3 },
   { id: "5", name: "Situ Lembang", c1: 4, c2: 2, c3: 3, c4: 3 },
-  { id: "6", name: "Kawah Cihuni", c1: 3, c2: 1, c3: 3, c4: 3 },
+  { id: "6", name: "Kawah Cibuni", c1: 3, c2: 1, c3: 3, c4: 3 },
 ];
