@@ -17,7 +17,6 @@ export interface Criteria {
   readonly id: CriteriaId;
   readonly name: string;
   readonly weight: number;
-  readonly maxScore: number;
   readonly attribute: CriteriaAttribute;
 }
 
