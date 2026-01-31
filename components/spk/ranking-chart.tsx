@@ -1,13 +1,7 @@
 "use client";
 
 import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -85,12 +79,9 @@ export function RankingChart({ results }: RankingChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Analisis Komparasi</CardTitle>
-        <CardDescription>
-          Perbandingan skor preferensi Anda dengan 3 rekomendasi teratas.
-        </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer className="h-[300px] w-full" config={chartConfig}>
+        <ChartContainer className="h-[180px] w-full" config={chartConfig}>
           <BarChart
             accessibilityLayer
             data={chartData}
@@ -113,18 +104,18 @@ export function RankingChart({ results }: RankingChartProps) {
               content={<ChartTooltipContent indicator="line" />}
               cursor={false}
             />
-            <Bar barSize={64} dataKey="score" layout="vertical" radius={4}>
+            <Bar dataKey="score" layout="vertical" radius={4}>
               <LabelList
                 className="fill-(--color-label)"
                 dataKey="name"
-                fontSize={12}
+                fontSize={11}
                 offset={8}
                 position="insideLeft"
               />
               <LabelList
                 className="fill-foreground"
                 dataKey="score"
-                fontSize={12}
+                fontSize={11}
                 formatter={(value: number) => value.toFixed(3)}
                 offset={8}
                 position="right"
