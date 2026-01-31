@@ -1,7 +1,15 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ArrowUpDown, Trophy } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Pencil,
+  Trash2,
+  Trophy,
+} from "lucide-react";
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -28,6 +36,10 @@ type SortableColumn = "rank" | "name" | "score" | "c1" | "c2" | "c3" | "c4";
 interface ResultTableProps {
   /** Array of tourism destinations with TOPSIS scores, sorted by rank */
   results: readonly Alternative[];
+  /** Callback when edit button is clicked */
+  onEdit?: (alternative: Alternative) => void;
+  /** Callback when delete button is clicked */
+  onDelete?: (alternativeId: string) => void;
 }
 
 /**
@@ -71,7 +83,7 @@ function SortIcon({
  * <ResultTable results={rankedAlternatives} />
  * ```
  */
-export function ResultTable({ results }: ResultTableProps) {
+export function ResultTable({ results, onEdit, onDelete }: ResultTableProps) {
   const [sortColumn, setSortColumn] = useState<SortableColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -208,6 +220,9 @@ export function ResultTable({ results }: ResultTableProps) {
                     />
                   </div>
                 </TableHead>
+                <TableHead className="w-[120px] text-center font-semibold text-gray-600 text-xs uppercase">
+                  Aksi
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-50">
@@ -281,6 +296,27 @@ export function ResultTable({ results }: ResultTableProps) {
                     {/* C1: Aksesibilitas */}
                     <TableCell className="p-4 text-right font-mono text-gray-600">
                       {alt.c1.toFixed(2)}
+                    </TableCell>
+                    {/* Action buttons - tersedia untuk semua row */}
+                    <TableCell className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button
+                          className="h-8 w-8 border-blue-200 p-0 text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => onEdit?.(alt)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          className="h-8 w-8 border-red-200 p-0 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                          onClick={() => onDelete?.(alt.id)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
