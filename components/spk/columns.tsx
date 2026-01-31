@@ -92,7 +92,7 @@ export const createColumns = (
             {alt.name}
           </div>
           <div className="mt-0.5 font-mono text-gray-400 text-xs">
-            DT: {alt.c2.toFixed(1)} | F: {alt.c3.toFixed(1)} | KL:{" "}
+            KAJ: {alt.c2.toFixed(1)} | KF: {alt.c3.toFixed(1)} | KB:{" "}
             {alt.c4.toFixed(1)}
           </div>
         </div>
@@ -142,7 +142,7 @@ export const createColumns = (
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             variant="ghost"
           >
-            Aksesibilitas
+            Keindahan Alam
             {getSortIcon(column.getIsSorted())}
           </Button>
         </div>
