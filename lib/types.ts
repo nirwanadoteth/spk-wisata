@@ -37,8 +37,8 @@ export interface Alternative {
   readonly c4: number;
   /** Final Preference Value (V) from TOPSIS calculation */
   readonly score?: number;
-  /** Flag to indicate user-submitted destination */
-  readonly isUserObj?: boolean;
+  /** Rank position (1-based), considers ties */
+  readonly rank?: number;
 }
 
 /**
