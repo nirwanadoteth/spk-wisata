@@ -1,7 +1,7 @@
 "use client";
 
-import { Award, MapPin, Plus, Search, TrendingUp } from "lucide-react";
-import { type ChangeEvent, useMemo, useState } from "react";
+import { Award, Plus, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { INITIAL_ALTERNATIVES } from "@/lib/spk-data";
 import { calculateTOPSIS } from "@/lib/topsis";
 import type { Alternative } from "@/lib/types";
@@ -44,7 +43,6 @@ import { UserInputForm } from "./user-input-form";
 export function SpkDashboard() {
   // Gabungkan data awal dengan data user input seperti di project referensi
   const [data, setData] = useState<Alternative[]>(INITIAL_ALTERNATIVES);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAlternative, setEditingAlternative] =
     useState<Alternative | null>(null);
@@ -102,16 +100,7 @@ export function SpkDashboard() {
   };
 
   /**
-   * Handles search input changes
-   * React 19.2 note: With React Compiler, this function is automatically
-   * optimized without needing useCallback
-   */
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  /**
-   * Calculate TOPSIS results and apply search filter
+   * Calculate TOPSIS results without filtering
    * React 19.2 note: With React Compiler enabled, manual memoization is less
    * critical, but we keep useMemo for expensive TOPSIS calculations
    */
@@ -120,18 +109,11 @@ export function SpkDashboard() {
     // Run TOPSIS algorithm to calculate preference scores
     const topsisResult = calculateTOPSIS(data);
 
-    // Apply search filter if query exists
-    const finalResults = searchQuery
-      ? topsisResult.alternatives.filter((r) =>
-          r.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : topsisResult.alternatives;
-
     return {
-      results: finalResults,
+      results: topsisResult.alternatives,
       calculationDetails: topsisResult,
     };
-  }, [data, searchQuery]);
+  }, [data]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900">
@@ -172,95 +154,84 @@ export function SpkDashboard() {
         </div>
       </div>
 
-      <div className="mx-auto mt-8 max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h2 className="font-bold text-2xl text-gray-800">
-                Hasil Rekomendasi
-              </h2>
-              <p className="text-gray-500 text-sm">Berdasarkan metode TOPSIS</p>
-            </div>
-            <div className="relative w-full md:w-64">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-              <Input
-                aria-label="Cari destinasi wisata"
-                className="rounded-xl border-gray-200 bg-white pl-10"
-                onChange={handleSearchChange}
-                placeholder="Cari wisata..."
-                value={searchQuery}
-              />
-            </div>
+      <div className="mx-auto mt-6 max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-4">
+          <div>
+            <h2 className="font-bold text-gray-800 text-xl">
+              Hasil Rekomendasi
+            </h2>
+            <p className="text-gray-500 text-xs">Berdasarkan metode TOPSIS</p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-4">
             {/* Card Rekomendasi Utama */}
             <Card className="relative overflow-hidden rounded-xl border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm lg:col-span-1">
-              <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-green-200 opacity-50" />
-              <CardHeader className="pb-2">
+              <div className="absolute top-0 right-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-full bg-green-200 opacity-50" />
+              <CardHeader>
                 <div className="flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 shadow-green-200 shadow-lg">
-                    <Award className="h-5 w-5 text-white" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow-green-200 shadow-lg">
+                    <Award className="h-4 w-4 text-white" />
                   </div>
-                  <CardTitle className="text-green-800 text-lg">
+                  <CardTitle className="text-green-800">
                     Rekomendasi Utama
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {results.length > 0 ? (
                   <>
                     <div>
-                      <h3 className="font-bold text-2xl text-gray-800">
+                      <h3 className="font-bold text-gray-800 text-xl">
                         {results[0].name}
                       </h3>
-                      <div className="mt-1 flex items-center gap-1 text-gray-500 text-sm">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>Ciwidey, Bandung</span>
-                      </div>
                     </div>
-
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 text-sm">Skor</span>
+                        <span className="text-gray-600 text-xs">Skor</span>
                         <div className="flex items-center gap-1">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                          <span className="font-bold text-green-600 text-lg">
+                          <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                          <span className="font-bold text-base text-green-600">
                             {((results[0].score ?? 0) * 100).toFixed(1)}%
                           </span>
                         </div>
                       </div>
                     </div>
-
-                    {/* Runner-up Section */}
-                    {results.length > 1 && (
-                      <div className="border-gray-200 border-t pt-4">
-                        <p className="mb-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
-                          Runner-up
-                        </p>
-                        <div className="space-y-2">
-                          {results.slice(1, 3).map((alt, idx) => (
-                            <div
-                              className="flex items-center justify-between rounded-lg bg-white/70 p-2.5"
-                              key={alt.id}
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-600 text-xs">
-                                  {idx + 2}
-                                </span>
-                                <span className="font-medium text-gray-700 text-sm">
-                                  {alt.name}
-                                </span>
-                              </div>
-                              <span className="font-semibold text-gray-500 text-sm">
-                                {((alt.score ?? 0) * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    Tidak ada data untuk ditampilkan.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card Runner-ups */}
+            <Card className="rounded-xl border-gray-200 bg-white shadow-sm lg:col-span-1">
+              <CardHeader className="pt-4 pb-2">
+                <CardTitle className="text-base text-gray-800">
+                  Runner-up
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                {results.length > 1 ? (
+                  results.slice(1, 3).map((alt, idx) => (
+                    <div
+                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-2"
+                      key={alt.id}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-600 text-xs">
+                          {idx + 2}
+                        </span>
+                        <span className="font-medium text-gray-700 text-xs">
+                          {alt.name}
+                        </span>
+                      </div>
+                      <span className="font-semibold text-gray-500 text-xs">
+                        {((alt.score ?? 0) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  ))
                 ) : (
                   <p className="text-gray-500 text-sm">
                     Tidak ada data untuk ditampilkan.
