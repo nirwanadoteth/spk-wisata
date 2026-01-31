@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Plus, TrendingUp } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   AlertDialog,
@@ -13,13 +13,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { INITIAL_ALTERNATIVES } from "@/lib/spk-data";
 import { calculateTOPSIS } from "@/lib/topsis";
 import type { Alternative } from "@/lib/types";
-import { RankingChart } from "./ranking-chart";
+import { CriteriaBreakdown } from "./criteria-breakdown";
+import { CriteriaWeightDisplay } from "./criteria-weight-display";
 import { ResultTable } from "./result-table";
+import { StatsWidget } from "./stats-widget";
+import { TopRecommendations } from "./top-recommendations";
 import { UserInputForm } from "./user-input-form";
 
 /**
@@ -137,7 +139,7 @@ export function SpkDashboard() {
                   </Button>
                 }
               />
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
+              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-125">
                 <UserInputForm
                   existingData={editingAlternative ?? undefined}
                   onClose={() => {
@@ -164,86 +166,17 @@ export function SpkDashboard() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-4">
-            {/* Card Rekomendasi Utama */}
-            <Card className="relative overflow-hidden rounded-xl border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-sm lg:col-span-1">
-              <div className="absolute top-0 right-0 h-24 w-24 translate-x-6 -translate-y-6 rounded-full bg-green-200 opacity-50" />
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow-green-200 shadow-lg">
-                    <Award className="h-4 w-4 text-white" />
-                  </div>
-                  <CardTitle className="text-green-800">
-                    Rekomendasi Utama
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {results.length > 0 ? (
-                  <>
-                    <div>
-                      <h3 className="font-bold text-gray-800 text-xl">
-                        {results[0].name}
-                      </h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600 text-xs">Skor</span>
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="h-3.5 w-3.5 text-green-600" />
-                          <span className="font-bold text-base text-green-600">
-                            {((results[0].score ?? 0) * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-gray-500 text-sm">
-                    Tidak ada data untuk ditampilkan.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            {/* Card Rekomendasi Top 3 */}
+            <TopRecommendations results={results} />
 
-            {/* Card Runner-ups */}
-            <Card className="rounded-xl border-gray-200 bg-white shadow-sm lg:col-span-1">
-              <CardHeader className="pt-4 pb-2">
-                <CardTitle className="text-base text-gray-800">
-                  Runner-up
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1.5">
-                {results.length > 1 ? (
-                  results.slice(1, 3).map((alt, idx) => (
-                    <div
-                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-2"
-                      key={alt.id}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-600 text-xs">
-                          {idx + 2}
-                        </span>
-                        <span className="font-medium text-gray-700 text-xs">
-                          {alt.name}
-                        </span>
-                      </div>
-                      <span className="font-semibold text-gray-500 text-xs">
-                        {((alt.score ?? 0) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-sm">
-                    Tidak ada data untuk ditampilkan.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            {/* Bobot Kriteria */}
+            <CriteriaWeightDisplay />
 
-            {/* Chart */}
-            <div className="lg:col-span-2">
-              <RankingChart results={results} />
-            </div>
+            {/* Stats Widget */}
+            <StatsWidget results={results} />
+
+            {/* Breakdown Kriteria */}
+            <CriteriaBreakdown results={results} />
           </div>
 
           <ResultTable
